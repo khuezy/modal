@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import { test } from './actions'
 export default function ServerAction() {
   return <div>
@@ -17,5 +18,7 @@ export default function ServerAction() {
       const end = new Date().getTime()
       console.log(end - start, d)
     }}>Fire Regular fetch</button>
+
+    <Link href='/feed'>Go to /feed</Link>
   </div>
 }
