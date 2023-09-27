@@ -11,6 +11,7 @@
 
 import { useCallback, useEffect, useRef, MouseEvent, AnchorHTMLAttributes } from 'react'
 import { useRouter } from 'next/navigation'
+// @ts-ignore
 import { AppRouterInstance } from 'next/dist/shared/lib/app-router-context'
 import { PrefetchKind } from 'next/dist/client/components/router-reducer/router-reducer-types'
 import { RefObject, useLayoutEffect, useState } from 'react'
