@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "openbuild": "rm -rf .next .open-next && npx --yes open-next@0.0.0-tags-13.5-2 build --streaming",
+    "openbuild": "rm -rf .next .open-next && npx --yes open-next@0.0.0-tags-13.5-2 build",
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
@@ -24,11 +24,16 @@
     "postcss": "8.4.27",
     "react": "18.2.0",
     "react-dom": "18.2.0",
-    "sst": "2.24.26",
+    "sst": "2.24.27",
     "tailwindcss": "3.3.3",
     "typescript": "5.1.6"
   },
   "devDependencies": {
     "@types/negotiator": "0.6.1"
+  },
+  "pnpm": {
+    "patchedDependencies": {
+      "sst@2.24.27": "patches/sst@2.24.27.patch"
+    }
   }
 }

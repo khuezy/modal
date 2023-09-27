@@ -1,0 +1,86 @@
+diff --git a/constructs/NextjsSite.js b/constructs/NextjsSite.js
+index 04e2e6096bbb3af5227db0a09536317a9e79a64e..308ae71f1a524f8c129b3221674f13defc7f12e4 100644
+--- a/constructs/NextjsSite.js
++++ b/constructs/NextjsSite.js
+@@ -1,6 +1,6 @@
+ import fs from "fs";
+ import path from "path";
+-import { Fn, Duration as CdkDuration, RemovalPolicy, CustomResource, } from "aws-cdk-lib/core";
++import { Fn, Duration as CdkDuration, RemovalPolicy, CustomResource } from "aws-cdk-lib/core";
+ import { Effect, Policy, PolicyStatement } from "aws-cdk-lib/aws-iam";
+ import { RetentionDays } from "aws-cdk-lib/aws-logs";
+ import { Code, Runtime, Architecture, Function as CdkFunction, FunctionUrlAuthType, } from "aws-cdk-lib/aws-lambda";
+@@ -16,6 +16,8 @@ import { SsrFunction } from "./SsrFunction.js";
+ import { EdgeFunction } from "./EdgeFunction.js";
+ import { SsrSite } from "./SsrSite.js";
+ import { toCdkSize } from "./util/size.js";
++import { AttributeType, BillingMode, Table } from "aws-cdk-lib/aws-dynamodb";
++import { Provider } from "aws-cdk-lib/custom-resources";
+ /**
+  * The `NextjsSite` construct is a higher level CDK construct that makes it easy to create a Next.js app.
+  * @example
+@@ -60,6 +62,59 @@ export class NextjsSite extends SsrSite {
+         server?.addEnvironment("REVALIDATION_QUEUE_URL", queue.queueUrl);
+         server?.addEnvironment("REVALIDATION_QUEUE_REGION", Stack.of(this).region);
+         queue.grantSendMessages(server?.role);
++        const app = this.node.root;
++
++        const table = new Table(this, "RevalidationTable", {
++            partitionKey: { name: "tag", type: AttributeType.STRING },
++            sortKey: { name: "path", type: AttributeType.STRING },
++            pointInTimeRecovery: true,
++            billingMode: BillingMode.PAY_PER_REQUEST,
++            tableName: app.logicalPrefixedName("next-revalidation-table"),
++        });
++
++        table.addGlobalSecondaryIndex({
++            indexName: "revalidate",
++            partitionKey: { name: "path", type: AttributeType.STRING },
++            sortKey: { name: "revalidatedAt", type: AttributeType.NUMBER },
++        });
++
++        server?.addEnvironment("CACHE_DYNAMO_TABLE", table.tableName);
++        table.grantReadWriteData(server?.role);
++
++        const insertFn = new CdkFunction(this, "RevalidationInsertFunction", {
++            description: "Next.js revalidation data insert",
++            handler: "index.handler",
++            code: Code.fromAsset(
++                path.join(this.props.path, ".open-next", "dynamodb-provider")
++            ),
++            runtime: Runtime.NODEJS_18_X,
++            timeout: CdkDuration.minutes(14),
++            initialPolicy: [
++                new PolicyStatement({
++                    actions: [
++                        "dynamodb:BatchWriteItem",
++                        "dynamodb:PutItem",
++                        "dynamodb:DescribeTable",
++                    ],
++                    resources: [table.tableArn],
++                }),
++            ],
++            environment: {
++                CACHE_DYNAMO_TABLE: table.tableName,
++            }
++        });
++
++        const provider = new Provider(this, "RevalidationProvider", {
++            onEventHandler: insertFn,
++            logRetention: RetentionDays.ONE_DAY,
++        });
++
++        new CustomResource(this, "RevalidationResource", {
++            serviceToken: provider.serviceToken,
++            properties: {
++                version: Date.now().toString()
++            }
++        });
+     }
+     initBuildConfig() {
+         return {
+@@ -358,3 +413,4 @@ export class NextjsSite extends SsrSite {
+         };
+     }
+ }
++
