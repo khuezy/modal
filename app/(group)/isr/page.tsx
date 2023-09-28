@@ -1,5 +1,5 @@
 
-export const revalidate = 300
+export const revalidate = 180
 
 const ISRPage = async () => {
   const bacon = await fetch('http://worldtimeapi.org/api/timezone/America/Los_Angeles', {
