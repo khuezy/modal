@@ -70,8 +70,7 @@ export async function middleware(request: NextRequest) {
   // const u = new URL("/feed", request.url);
   // console.log(request.url);
   const rHeaders = new Headers();
-  rHeaders.set('khue', request.nextUrl.searchParams.get('khue')!)
-  rHeaders.set('cache-control', 'public,max-age=31536000,immutable')
+  rHeaders.set('hhh', request.nextUrl.searchParams.get('hhh')!)
   // rHeaders.set('content-encodng', 'gzip')
   // Step 3: Alter the response
   rHeaders.set('x-default-locale', defaultLocale);
@@ -83,7 +82,7 @@ export async function middleware(request: NextRequest) {
   });
   r.cookies.set('koocies', 'keks')
   r.cookies.set('hellow', 'orld')
-  console.log('~~mw')
+  // console.log('~~mw')
   return r;
 }
 

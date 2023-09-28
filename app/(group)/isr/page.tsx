@@ -1,9 +1,19 @@
-async function getTime() {
-  return new Date().toISOString();
+
+export const revalidate = 300
+
+const ISRPage = async () => {
+  const bacon = await fetch('http://worldtimeapi.org/api/timezone/America/Los_Angeles', {
+    next: {
+      tags: ['bacon']
+    }
+  })
+  const data = await bacon.json()
+  return (
+    <hgroup>
+      <h1>ISR Page</h1>
+      <h3>{`Last generated at : ${data.utc_datetime}`}</h3>
+    </hgroup>
+  )
 }
 
-export const revalidate = 120;
-export default async function ISR() {
-  const time = getTime();
-  return <div>Time: {time}</div>;
-}
+export default ISRPage

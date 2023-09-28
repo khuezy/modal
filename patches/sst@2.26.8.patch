@@ -1,25 +1,27 @@
 diff --git a/constructs/NextjsSite.js b/constructs/NextjsSite.js
-index 04e2e6096bbb3af5227db0a09536317a9e79a64e..308ae71f1a524f8c129b3221674f13defc7f12e4 100644
+index 36465764aa6aca0f30f52c67b6c757f9dd95316f..b6574ab7a8ad1c0f430c34829f6e774fac51e0d1 100644
 --- a/constructs/NextjsSite.js
 +++ b/constructs/NextjsSite.js
-@@ -1,6 +1,6 @@
+@@ -1,12 +1,17 @@
  import fs from "fs";
  import path from "path";
--import { Fn, Duration as CdkDuration, RemovalPolicy, CustomResource, } from "aws-cdk-lib/core";
-+import { Fn, Duration as CdkDuration, RemovalPolicy, CustomResource } from "aws-cdk-lib/core";
- import { Effect, Policy, PolicyStatement } from "aws-cdk-lib/aws-iam";
- import { RetentionDays } from "aws-cdk-lib/aws-logs";
- import { Code, Runtime, Architecture, Function as CdkFunction, FunctionUrlAuthType, } from "aws-cdk-lib/aws-lambda";
-@@ -16,6 +16,8 @@ import { SsrFunction } from "./SsrFunction.js";
- import { EdgeFunction } from "./EdgeFunction.js";
+-import { Duration as CdkDuration } from "aws-cdk-lib/core";
++import { Duration as CdkDuration, CustomResource } from "aws-cdk-lib/core";
+ import { Code, Runtime, Function as CdkFunction, Architecture, } from "aws-cdk-lib/aws-lambda";
+ import { Queue } from "aws-cdk-lib/aws-sqs";
+ import { SqsEventSource } from "aws-cdk-lib/aws-lambda-event-sources";
+ import { Stack } from "./Stack.js";
  import { SsrSite } from "./SsrSite.js";
  import { toCdkSize } from "./util/size.js";
 +import { AttributeType, BillingMode, Table } from "aws-cdk-lib/aws-dynamodb";
 +import { Provider } from "aws-cdk-lib/custom-resources";
++import { PolicyStatement } from "aws-cdk-lib/aws-iam";
++import { RetentionDays } from "aws-cdk-lib/aws-logs";
++
  /**
   * The `NextjsSite` construct is a higher level CDK construct that makes it easy to create a Next.js app.
   * @example
-@@ -60,6 +62,59 @@ export class NextjsSite extends SsrSite {
+@@ -194,6 +199,59 @@ export class NextjsSite extends SsrSite {
          server?.addEnvironment("REVALIDATION_QUEUE_URL", queue.queueUrl);
          server?.addEnvironment("REVALIDATION_QUEUE_REGION", Stack.of(this).region);
          queue.grantSendMessages(server?.role);
@@ -77,9 +79,9 @@ index 04e2e6096bbb3af5227db0a09536317a9e79a64e..308ae71f1a524f8c129b3221674f13de
 +            }
 +        });
      }
-     initBuildConfig() {
+     getConstructMetadata() {
          return {
-@@ -358,3 +413,4 @@ export class NextjsSite extends SsrSite {
+@@ -202,3 +260,4 @@ export class NextjsSite extends SsrSite {
          };
      }
  }
